@@ -1,10 +1,12 @@
 package assign04;
 
 import java.util.Comparator;
+import timing.TimingExperiment;
+import timing.ArrayGenerator;
 
 public class InsertionSortWorstCaseTimingExperiment extends TimingExperiment {
 
-    private Integer[] array;
+    protected Integer[] array;
 
     public InsertionSortWorstCaseTimingExperiment() {
         super("array size", 1000, 20, 1000, 100);

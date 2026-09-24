@@ -1,4 +1,4 @@
-package assign04;
+package timing;
 
 import java.util.ArrayList;
 import java.util.Arrays;
