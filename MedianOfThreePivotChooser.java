@@ -3,8 +3,8 @@ package assign05;
 import java.util.ArrayList;
 
 /**
- * Chooses a quicksort pivot by finding the median value among the first,
- * middle, and last elements of a specified portion of a list.
+ * Chooses a quicksort pivot by finding the median value from the first,
+ * middle, and last elements of a portion of the list.
  *
  * @param <E> the type of elements in the list
  * @author Ava Murphy & Yujia Zhao
@@ -14,13 +14,12 @@ public class MedianOfThreePivotChooser<E extends Comparable<? super E>>
 		implements PivotChooser<E> {
 
 	/**
-	 * Returns the index whose element is the median of the first, middle,
-	 * and last elements in the specified range.
+	 * Returns the median of three index values of the provided list.
 	 *
 	 * @param list the list from which to choose a pivot
-	 * @param leftIndex the first index of the range
-	 * @param rightIndex the last index of the range
-	 * @return the index of the median-of-three pivot
+	 * @param leftIndex the first index
+	 * @param rightIndex the last index
+	 * @return the index of the median pivot
 	 */
 	@Override
 	public int getPivotIndex(ArrayList<E> list,
