@@ -11,7 +11,6 @@ import java.util.ArrayList;
  * @version September 30, 2026
  */
 public class MergeSorter<E extends Comparable<? super E>> implements Sorter<E> {
-
 	private int threshold;
 
 	/**
@@ -22,7 +21,6 @@ public class MergeSorter<E extends Comparable<? super E>> implements Sorter<E> {
 	public MergeSorter(int threshold) {
 		if(threshold <= 0)
 			throw new IllegalArgumentException();
-
 		this.threshold = threshold;
 	}
 
@@ -34,18 +32,13 @@ public class MergeSorter<E extends Comparable<? super E>> implements Sorter<E> {
 	public void sort(ArrayList<E> list) {
 		if(list.size() <= 1)
 			return;
-
 		int currentThreshold = threshold;
-
 		if(list.size() < currentThreshold)
 			currentThreshold = list.size();
-
 		// Create the auxiliary list only once.
 		ArrayList<E> temp = new ArrayList<E>();
-
 		for(int i = 0; i < list.size(); i++)
 			temp.add(null);
-
 		mergeSort(list, temp, 0, list.size() - 1, currentThreshold);
 	}
 
@@ -59,11 +52,9 @@ public class MergeSorter<E extends Comparable<? super E>> implements Sorter<E> {
 	 * @param rightIndex the last index of the portion to sort
 	 * @param currentThreshold the threshold where insertion sort is used
 	 */
-	private void mergeSort(ArrayList<E> list, ArrayList<E> temp,
+	private void mergeSort(ArrayList<E> list, ArrayList<E> temp, 
 			int leftIndex, int rightIndex, int currentThreshold) {
-
 		int size = rightIndex - leftIndex + 1;
-
 		// Switch to insertion sort when the threshold is reached.
 		if(size <= currentThreshold) {
 			insertionSort(list, leftIndex, rightIndex);
@@ -91,7 +82,6 @@ public class MergeSorter<E extends Comparable<? super E>> implements Sorter<E> {
 		int left = leftIndex;
 		int right = middleIndex + 1;
 		int tempIndex = leftIndex;
-
 		while(left <= middleIndex && right <= rightIndex) {
 			if(list.get(left).compareTo(list.get(right)) <= 0) {
 				temp.set(tempIndex, list.get(left));
@@ -104,19 +94,16 @@ public class MergeSorter<E extends Comparable<? super E>> implements Sorter<E> {
 
 			tempIndex++;
 		}
-
 		while(left <= middleIndex) {
 			temp.set(tempIndex, list.get(left));
 			left++;
 			tempIndex++;
 		}
-
 		while(right <= rightIndex) {
 			temp.set(tempIndex, list.get(right));
 			right++;
 			tempIndex++;
 		}
-
 		for(int i = leftIndex; i <= rightIndex; i++)
 			list.set(i, temp.get(i));
 	}
@@ -127,20 +114,16 @@ public class MergeSorter<E extends Comparable<? super E>> implements Sorter<E> {
 	 * @param leftIndex the first index of the portion to sort
 	 * @param rightIndex the last index of the portion to sort
 	 */
-	private void insertionSort(ArrayList<E> list,
-			int leftIndex, int rightIndex) {
-
+	private void insertionSort(ArrayList<E> list, int leftIndex, int rightIndex) {
 		for(int i = leftIndex + 1; i <= rightIndex; i++) {
 			E current = list.get(i);
 			int j = i - 1;
-
 			while(j >= leftIndex &&
 					list.get(j).compareTo(current) > 0) {
 
 				list.set(j + 1, list.get(j));
 				j--;
 			}
-
 			list.set(j + 1, current);
 		}
 	}
