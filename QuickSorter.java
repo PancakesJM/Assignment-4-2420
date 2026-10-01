@@ -3,9 +3,7 @@ package assign05;
 import java.util.ArrayList;
 
 /**
- * Sorts an ArrayList using quicksort with a provided pivot selection strategy.
- *
- * @param <E> the type of elements in the list
+ * Sorts an ArrayList using quicksort with a PivotChooser object
  * @author Ava Murphy & Yujia Zhao
  * @version September 30, 2026
  */
@@ -21,10 +19,9 @@ public class QuickSorter <E extends Comparable<? super E>> implements Sorter<E> 
 		this.pivot = chooser;
 	}
 
-    /**
-     * Sorts the provided list into ascending order using quicksort.
-     *
-     * @param list the list to sort
+     /**
+     * Mthod that calls Quick Sort on provided array
+     * @param - Generic array to sort
      */
 	@Override
 	public void sort(ArrayList<E> list) {
@@ -33,11 +30,11 @@ public class QuickSorter <E extends Comparable<? super E>> implements Sorter<E> 
 	}
 
 	/**
-	 * Recursively sorts the portion of the list between the given indices.
+	 * Recursively sorts the list between min and max indeces
 	 *
-	 * @param list the list being sorted
-	 * @param min the first index of the portion to sort
-	 * @param max the last index of the portion to sort
+	 * @param list- the list being sorted
+	 * @param min- the first index of sub array
+	 * @param max the last index of sub array
 	 */
 	private void sortRecursive(ArrayList<E> list, int min, int max) {
 		
@@ -57,55 +54,42 @@ public class QuickSorter <E extends Comparable<? super E>> implements Sorter<E> 
 	}
 
 	/**
-	 * Partitions a portion of the list around the selected pivot value.
-	 * Elements smaller than the pivot are moved before it and elements larger
-	 * than the pivot are moved after it.
-	 *
-	 * @param pivot the index of the selected pivot
-	 * @param list the list being partitioned
-	 * @param minIndex the first index of the portion to partition
-	 * @param maxIndex the last index of the portion to partition
-	 * @return the final index of the pivot
+	 * Helper method called by sortRecursive for sorting array around a pivot point
+	 * @param pivot- point for array to be sorted around
+	 * @param list- arraylist being sorted
+	 * @param minIndex- smallest index being compared
+	 * @param maxIndex- largest index being compared
 	 */
-	private int partition(int pivot, ArrayList<E> list,
-	        int minIndex, int maxIndex) {
-
+	private int partition(int pivot, ArrayList<E> list, int minIndex, int maxIndex) {
 	    E pivotValue = list.get(pivot);
-
 	    // Move the pivot to the end.
 	    E temp = list.get(maxIndex);
 	    list.set(maxIndex, pivotValue);
 	    list.set(pivot, temp);
-
 	    int left = minIndex;
 	    int right = maxIndex - 1;
 
 	    while(left <= right) {
-
-	        // Find an element on the left that belongs on the right.
+	        // Find an element out of place on the left
 	        while(left <= right &&
 	                list.get(left).compareTo(pivotValue) < 0) {
 	            left++;
 	        }
-
-	        // Find an element on the right that belongs on the left.
+	        // Find an element out of place on the right
 	        while(left <= right &&
 	                list.get(right).compareTo(pivotValue) > 0) {
 	            right--;
 	        }
-
-	        // Swap the two misplaced elements.
+	        // Swap the misplaced elements.
 	        if(left <= right) {
 	            temp = list.get(left);
 	            list.set(left, list.get(right));
 	            list.set(right, temp);
-
 	            left++;
 	            right--;
 	        }
 	    }
-
-	    // Move the pivot to its final position.
+	    // Move the pivot back
 	    temp = list.get(left);
 	    list.set(left, pivotValue);
 	    list.set(maxIndex, temp);
