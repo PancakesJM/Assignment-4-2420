@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 /**
  * Sorts an ArrayList using merge sort and switches to insertion sort
- * when a sublist reaches a specified threshold size.
+ * when the list portion reaches the threshold size.
  *
  * @param <E> the type of elements in the list
  * @author Ava Murphy & Yujia Zhao
@@ -16,8 +16,7 @@ public class MergeSorter<E extends Comparable<? super E>> implements Sorter<E> {
 
 	/**
 	 * Constructs a merge sorter with the specified insertion sort threshold.
-	 *
-	 * @param threshold the maximum sublist size at which insertion sort is used
+	 * @param threshold- list size at which insertion sort is used
 	 * @throws IllegalArgumentException if threshold is less than or equal to zero
 	 */
 	public MergeSorter(int threshold) {
@@ -28,8 +27,7 @@ public class MergeSorter<E extends Comparable<? super E>> implements Sorter<E> {
 	}
 
 	/**
-	 * Sorts the provided list into ascending order.
-	 *
+	 * Sorts the provided list according to natural ordering.
 	 * @param list the list to sort
 	 */
 	@Override
@@ -59,7 +57,7 @@ public class MergeSorter<E extends Comparable<? super E>> implements Sorter<E> {
 	 * @param temp the auxiliary list used during merging
 	 * @param leftIndex the first index of the portion to sort
 	 * @param rightIndex the last index of the portion to sort
-	 * @param currentThreshold the threshold at which insertion sort is used
+	 * @param currentThreshold the threshold where insertion sort is used
 	 */
 	private void mergeSort(ArrayList<E> list, ArrayList<E> temp,
 			int leftIndex, int rightIndex, int currentThreshold) {
@@ -73,10 +71,8 @@ public class MergeSorter<E extends Comparable<? super E>> implements Sorter<E> {
 		}
 
 		int middleIndex = leftIndex + (rightIndex - leftIndex) / 2;
-
 		mergeSort(list, temp, leftIndex, middleIndex, currentThreshold);
 		mergeSort(list, temp, middleIndex + 1, rightIndex, currentThreshold);
-
 		merge(list, temp, leftIndex, middleIndex, rightIndex);
 	}
 
@@ -126,8 +122,7 @@ public class MergeSorter<E extends Comparable<? super E>> implements Sorter<E> {
 	}
 
 	/**
-	 * Sorts a specified portion of the list using insertion sort.
-	 *
+	 * Sorts a part of the list using insertion sort.
 	 * @param list the list containing the portion to sort
 	 * @param leftIndex the first index of the portion to sort
 	 * @param rightIndex the last index of the portion to sort
