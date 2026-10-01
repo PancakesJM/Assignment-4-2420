@@ -18,15 +18,20 @@ public class QuickSorter <E extends Comparable<? super E>> implements Sorter<E> 
 	}
 	
 	private void sortRecursive(ArrayList<E> list, int min, int max) {
+		
+		if(min >= max)
+			return;
+		
 		//Partitions into two parts along a pivot
 		int pivot = this.pivot.getPivotIndex(list, min, max);
 		int value = partition(pivot, list, min, max);
+		
 		//Recursively sorts the first segment of array
 		if(min < value)
 			sortRecursive(list, min, value - 1);
 		//recursively sorts second segment of array
 		if(min < max - 1)
-			sortRecursive(list, pivot + 1, max);
+			sortRecursive(list, value + 1, max);
 	}
 	/**
 	 * Helper method called by sortRecursive for sorting array around a pivot point
@@ -35,38 +40,49 @@ public class QuickSorter <E extends Comparable<? super E>> implements Sorter<E> 
 	 * @param minIndex
 	 * @param maxIndex
 	 */
-	private int partition(int pivot, ArrayList<E> list, int minIndex, int maxIndex) {
-		//Places pivot at the last index
-		E temp = list.get(maxIndex);
-		E pivotValue = list.get(pivot);
-		list.set(maxIndex, pivotValue);
-		list.set(pivot, temp);
-		int pivotIndex = maxIndex;
-		if(minIndex != maxIndex)
-			maxIndex--;
-		//Compares values in portion of array and swaps until no elements are left
-		while(minIndex < maxIndex) {
-			//If both indices are out of order, swap with each other
-			if(list.get(minIndex).compareTo(pivotValue) > 0 
-					&& list.get(maxIndex).compareTo(pivotValue) < 0) {
-				temp = list.get(maxIndex);
-				list.set(maxIndex, list.get(minIndex));
-				list.set(minIndex, temp);
-				minIndex++;
-				maxIndex--;
-			}
-			//if only one is out of order, keep that index and move the other
-			else {
-				if(list.get(minIndex).compareTo(pivotValue) < 0)
-					minIndex++;
-				if(list.get(maxIndex).compareTo(pivotValue) > 0)
-					maxIndex--;
-			}
-		}
-		//Swaps the pivot at the end with the appropriate index
-		list.set(pivotIndex, list.get(minIndex));
-		list.set(minIndex, pivotValue);
-		// returns the pivot point to be used for future partitions
-		return minIndex;		
+	private int partition(int pivot, ArrayList<E> list,
+	        int minIndex, int maxIndex) {
+
+	    E pivotValue = list.get(pivot);
+
+	    // Move the pivot to the end.
+	    E temp = list.get(maxIndex);
+	    list.set(maxIndex, pivotValue);
+	    list.set(pivot, temp);
+
+	    int left = minIndex;
+	    int right = maxIndex - 1;
+
+	    while(left <= right) {
+
+	        // Find an element on the left that belongs on the right.
+	        while(left <= right &&
+	                list.get(left).compareTo(pivotValue) < 0) {
+	            left++;
+	        }
+
+	        // Find an element on the right that belongs on the left.
+	        while(left <= right &&
+	                list.get(right).compareTo(pivotValue) > 0) {
+	            right--;
+	        }
+
+	        // Swap the two misplaced elements.
+	        if(left <= right) {
+	            temp = list.get(left);
+	            list.set(left, list.get(right));
+	            list.set(right, temp);
+
+	            left++;
+	            right--;
+	        }
+	    }
+
+	    // Move the pivot to its final position.
+	    temp = list.get(left);
+	    list.set(left, pivotValue);
+	    list.set(maxIndex, temp);
+
+	    return left;
 	}
 }
