@@ -1,0 +1,23 @@
+package assign07;
+import assign06.List;
+
+public class GraphUtility {
+	
+	public static <Type> List<Type> shortestPath(List<Type> sources, List<Type> destinations, Type srcData, Type dstData){
+		if(sources.size() != destinations.size())
+			throw new IllegalArgumentException("destination and source lists must be the same size");
+		Graph<Type> graph = new Graph<>(sources, destinations);
+		return graph.breadthFirstSearch(srcData, dstData);
+	}
+	
+	public static <Type> List<Type> shortestWeightedPath(List<Type> sources, List<Type> destinations, List<Double> weights, Type srcData, Type dstData) {
+		Graph<Type> graph = new Graph<>(sources, destinations);
+		return graph.dijkstrasAlgorithm(srcData, dstData);
+	}
+	
+	public static <Type> List<Type> sort(List<Type> sources, List<Type> destinations) {
+		Graph<Type> graph = new Graph<>(sources, destinations);
+		return graph.topoSort();
+	}
+	
+}
