@@ -1,20 +1,46 @@
 package assign07;
 import assign06.List;
-
+/**
+ * @author Ava Murphy and Yujia Zhao
+ * @Version 10/29/2026
+ * Static method class that finds paths from a given set of data
+ */
 public class GraphUtility {
-	
-	public static <Type> List<Type> shortestPath(List<Type> sources, List<Type> destinations, Type srcData, Type dstData){
-		if(sources.size() != destinations.size())
-			throw new IllegalArgumentException("destination and source lists must be the same size");
-		Graph<Type> graph = new Graph<>(sources, destinations);
-		return graph.breadthFirstSearch(srcData, dstData);
+	/**
+	 * Finds the shortest path between vertices, ignoring edge weights
+	 * @param sources- list of starting point vertices 
+	 * @param destinations- list of destination vertices
+	 * @param srcData- starting point for search
+	 * @param dstData- stopping point for search
+	 * @return Linked List of vertices, in order representing a path
+	 */
+	public static <Type> List<Type> shortestPath(List<Type> sources, List<Type> destinations, Type srcData, Type dstData) {
+		Graph<Type> newGraph = new Graph<>(sources, destinations);
+		List<Type> newGraph.breadthFirstSearch(srcData, dstData);
+		if(!newGraph.graph.containsKey(srcData) || !newGraph.graph.containsKey(dstData) || destinations.size() != sources.size())
+			throw new IllegalArgumentException("Mismatch data, graphs must be the same length and contain target values");
+		return newGraph.breadthFirstSearch(srcData, dstData);
 	}
-	
+	/**
+	 * Finds the shortest path between vertices using edge weights
+	 * @param sources- list of starting point vertices 
+	 * @param destinations- list of destination vertices
+	 * @param srcData- starting point for search
+	 * @param dstData- stopping point for search
+	 * @param- Edge weights corresponding to each previous vertex. Should be one less than source list
+	 * @return Linked List of vertices, in order representing a path
+	 */
 	public static <Type> List<Type> shortestWeightedPath(List<Type> sources, List<Type> destinations, List<Double> weights, Type srcData, Type dstData) {
 		Graph<Type> graph = new Graph<>(sources, destinations);
+		graph.dijkstrasAlgorithm(srcData, dstData);
 		return graph.dijkstrasAlgorithm(srcData, dstData);
 	}
-	
+	/**
+	 * Orders topologically, meaning the closer points to start value come first
+	 * @param sources- list of starting point vertices 
+	 * @param destinations- list of destination vertices
+	 * @return Linked List of vertices, in topological order
+	 */
 	public static <Type> List<Type> sort(List<Type> sources, List<Type> destinations) {
 		Graph<Type> graph = new Graph<>(sources, destinations);
 		return graph.topoSort();
