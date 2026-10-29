@@ -1,80 +1,83 @@
 package assign07;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
-import assign06.List;
+/** A directed, weighted graph backed by adjacency lists. */
+public class Graph<Type> {
 
-public class Graph <Type> {
-	public HashMap<Type, Vertex<Type>> graph = new HashMap<>();
-	public Graph(List<Type> source, List<Type> destination){
-		for(int i = 0; i < source.size(); i++) {
-			addEdge(source.get(i), destination.get(i));
-		}
-	}
-	
-	public List<Type> breadthFirstSearch(Type source, Type destination) {
-		Queue<Vertex<Type>> queue = new LinkedList<>();
-		LinkedList<Edge<Type>> path = new LinkedList<>();
-		Vertex<Type> start = graph.get(source);
-		queue.offer(start);
-		Vertex<Type> current = null;
-		while(!queue.isEmpty())
-			current = queue.poll();
-			for(int i = 0; i < current.neighbors.size(); i++) {
-				queue.offer(graph.get(current.neighbors.get(i)));
-				path.add(current.neighbors.get(i));
-			}
-		return (List<Type>) path;
-	}
-	
-	public void addEdge(Type source, Type destination) {
-		Edge<Type> currentEdge;
-		Vertex<Type> sourceVertex;
-		Vertex<Type> destinationVertex;
-		LinkedList<Edge<Type>> neighbors = null;
-		//adds a new starting Vertex to graph if none exist
-		if(!graph.containsKey(source)) {
-			sourceVertex = new Vertex<Type>(source, neighbors);
-			graph.put(source, sourceVertex);
-		}
-		//adds a new ending Vertex to graph if none exist
-		if(!graph.containsKey(destination)) {
-			destinationVertex = new Vertex<Type>(destination, neighbors);
-			graph.put(destination, destinationVertex);
-		}
-		currentEdge = new Edge<Type>(graph.get(source), graph.get(destination), 1.0);
-		//updates edge, indegree, and destination attributes 
-		graph.get(source).neighbors.add(currentEdge);
-		
-		graph.get(destination).indegree++;
-		graph.get(source).previous = destination;
-	}
-	
-	public class Edge <EType> {
-		Vertex<EType> destination;
-		Vertex<EType> source;
-		double weight;
-		public Edge(Vertex<EType> source, Vertex<EType> destination, double weight) {
-			this.destination = destination;
-			this.source = source;
-			this.weight = weight;
-		}
-	}
-	
-	public class Vertex<VType> {
-		boolean visited = false;
-		public VType data;
-		LinkedList<Edge<VType>> neighbors = new LinkedList<>();
-		double distanceFromStart = 0.0;
-		public int indegree = 0;
-		public VType previous = null;
-		
-		public Vertex(VType data, LinkedList<Edge<VType>> neighbors) {
-			this.data = data;
-			this.neighbors = neighbors;
-		}
-	}
+    final Map<Type, Vertex<Type>> vertices;
+
+    /** Creates an empty graph. */
+    public Graph() {
+        vertices = new LinkedHashMap<>();
+    }
+
+    /** Adds a directed edge, creating its endpoints if necessary. */
+    public void addEdge(Type source, Type destination, double weight) {
+        if (source == null || destination == null
+                || !Double.isFinite(weight) || weight < 0) {
+            throw new IllegalArgumentException(
+                    "Invalid edge endpoint or weight");
+        }
+
+        Vertex<Type> from =
+                vertices.computeIfAbsent(source, Vertex::new);
+
+        Vertex<Type> to =
+                vertices.computeIfAbsent(destination, Vertex::new);
+
+        from.outgoing.add(new Edge<>(to, weight));
+        to.indegree++;
+    }
+
+    /** Returns an unweighted shortest path from source to destination. */
+    public List<Type> breadthFirstSearch(Type source, Type destination) {
+        return BFS.search(this, source, destination);
+    }
+
+    /** Returns a minimum-weight path from source to destination. */
+    public List<Type> dijkstrasAlgorithm(Type source, Type destination) {
+        return Dijkstra.search(this, source, destination);
+    }
+
+    /** Returns a topological ordering, or throws if the graph has a cycle. */
+    public List<Type> topoSort() {
+        return TopologicalSort.sort(this);
+    }
 }
 
+/** A graph vertex, with adjacency and algorithm state stored together. */
+class Vertex<Type> {
+
+    final Type data;
+    final List<Edge<Type>> outgoing;
+
+    double distance;
+    Vertex<Type> previous;
+    int indegree;
+
+    /** Creates a vertex with an empty outgoing-edge list. */
+    public Vertex(Type data) {
+        this.data = data;
+        this.outgoing = new ArrayList<>();
+        this.distance = Double.POSITIVE_INFINITY;
+        this.previous = null;
+        this.indegree = 0;
+    }
+}
+
+/** A directed edge with a destination vertex and a nonnegative weight. */
+class Edge<Type> {
+
+    final Vertex<Type> destination;
+    final double weight;
+
+    /** Creates an edge to destination with the supplied weight. */
+    public Edge(Vertex<Type> destination, double weight) {
+        this.destination = destination;
+        this.weight = weight;
+    }
+}
