@@ -1,28 +1,43 @@
 package assign07;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 
-/** Kahn's topological sorting algorithm. */
+/**
+ * Performs Kahn's topological sort on a directed graph using a FIFO queue.
+ *
+ * @author Ava Murphy and Yujia Zhao
+ * @version October 29, 2026
+ */
 public final class TopologicalSort {
-    private TopologicalSort() { }
 
-    /** Returns a topological ordering; rejects directed cycles. */
+    /**
+     * Prevents instantiation of this utility class.
+     */
+    private TopologicalSort() {
+    }
+
+    /**
+     * Orders the graph's vertices so that each source precedes its destinations.
+     * The remaining indegree is stored in each vertex, preserving its permanent
+     * indegree for later calls to this method.
+     *
+     * @param <Type> the type of data stored in each vertex
+     * @param graph the directed graph to sort
+     * @return vertex data in a valid topological order
+     * @throws IllegalArgumentException if the graph is null or has a cycle
+     */
     public static <Type> List<Type> sort(Graph<Type> graph) {
         if (graph == null) {
             throw new IllegalArgumentException("Graph cannot be null");
         }
 
-        // Work on local counts so repeated calls do not damage stored indegrees.
-        Map<Vertex<Type>, Integer> remaining = new HashMap<>();
         Queue<Vertex<Type>> ready = new LinkedList<>();
         for (Vertex<Type> vertex : graph.vertices.values()) {
-            remaining.put(vertex, vertex.indegree);
-            if (vertex.indegree == 0) {
+            vertex.remainingIndegree = vertex.indegree;
+            if (vertex.remainingIndegree == 0) {
                 ready.add(vertex);
             }
         }
@@ -31,15 +46,16 @@ public final class TopologicalSort {
         while (!ready.isEmpty()) {
             Vertex<Type> current = ready.remove();
             order.add(current.data);
+
             for (Edge<Type> edge : current.outgoing) {
                 Vertex<Type> next = edge.destination;
-                int count = remaining.get(next) - 1;
-                remaining.put(next, count);
-                if (count == 0) {
+                next.remainingIndegree--;
+                if (next.remainingIndegree == 0) {
                     ready.add(next);
                 }
             }
         }
+
         if (order.size() != graph.vertices.size()) {
             throw new IllegalArgumentException("Graph contains a directed cycle");
         }

@@ -7,12 +7,36 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-/** Dijkstra's algorithm using a sorted list instead of a priority queue. */
+/**
+ * Finds shortest weighted paths with Dijkstra's algorithm using a sorted list
+ * of unvisited vertices rather than a priority queue.
+ *
+ * @author Ava Murphy and Yujia Zhao
+ * @version October 29, 2026
+ */
 public final class Dijkstra {
-    private Dijkstra() { }
 
-    /** Finds a minimum-weight path in a graph with nonnegative edge weights. */
-    public static <Type> List<Type> search(Graph<Type> graph, Type source, Type destination) {
+    /**
+     * Prevents instantiation of this utility class.
+     */
+    private Dijkstra() {
+    }
+
+    /**
+     * Finds a minimum-weight directed path between two existing vertices.
+     * On each iteration, the unvisited list is sorted by descending distance,
+     * and its last vertex (the smallest distance) is visited next.
+     *
+     * @param <Type> the type of data stored in the graph vertices
+     * @param graph the graph to search
+     * @param source the starting vertex data
+     * @param destination the destination vertex data
+     * @return the minimum-weight path from source to destination
+     * @throws IllegalArgumentException if the graph or either vertex is missing,
+     *         the destination cannot be reached, or an edge weight is invalid
+     */
+    public static <Type> List<Type> search(Graph<Type> graph, Type source,
+            Type destination) {
         if (graph == null || !graph.vertices.containsKey(source)
                 || !graph.vertices.containsKey(destination)) {
             throw new IllegalArgumentException("Source or destination is missing");
@@ -29,21 +53,27 @@ public final class Dijkstra {
 
         List<Vertex<Type>> unvisited = new ArrayList<>(graph.vertices.values());
         Set<Vertex<Type>> visited = new HashSet<>();
+
         while (!unvisited.isEmpty()) {
-            // Descending order: remove the final element (smallest distance).
-            unvisited.sort(Comparator.comparingDouble((Vertex<Type> v) -> v.distance).reversed());
+            // Descending order places the smallest distance at the end.
+            unvisited.sort(Comparator.comparingDouble(
+                    (Vertex<Type> vertex) -> vertex.distance).reversed());
             Vertex<Type> current = unvisited.remove(unvisited.size() - 1);
+
             if (Double.isInfinite(current.distance)) {
                 break;
             }
             if (current == goal) {
                 break;
             }
+
             visited.add(current);
             for (Edge<Type> edge : current.outgoing) {
-                if (edge.weight < 0 || !Double.isFinite(edge.weight)) {
-                    throw new IllegalArgumentException("Dijkstra requires finite nonnegative weights");
+                if (!Double.isFinite(edge.weight) || edge.weight < 0) {
+                    throw new IllegalArgumentException(
+                            "Dijkstra requires finite, nonnegative edge weights");
                 }
+
                 Vertex<Type> next = edge.destination;
                 if (!visited.contains(next)) {
                     double candidate = current.distance + edge.weight;
@@ -58,9 +88,11 @@ public final class Dijkstra {
         if (Double.isInfinite(goal.distance)) {
             throw new IllegalArgumentException("Destination is unreachable");
         }
+
         List<Type> path = new ArrayList<>();
-        for (Vertex<Type> at = goal; at != null; at = at.previous) {
-            path.add(at.data);
+        for (Vertex<Type> current = goal; current != null;
+                current = current.previous) {
+            path.add(current.data);
         }
         Collections.reverse(path);
         return path;
