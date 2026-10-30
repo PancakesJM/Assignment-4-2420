@@ -1,18 +1,26 @@
 public List<Type> breadthFirstSearch(Type source, Type destination) {
 		Queue<Vertex<Type>> queue = new LinkedList<>();
-		LinkedList<Vertex<Type>> path = new LinkedList<>();
 		Vertex<Type> start = graph.get(source);
 		Vertex<Type> end = graph.get(destination);
-		//puts the start vertex at the front of the queue
-		queue.offer(start);
 		Vertex<Type> current = null;
+		LinkedList<Vertex<Type>> path = new LinkedList<>();
+		//put the start vertex at the front of the queue
+		queue.offer(start);
+		start.distanceFromStart = 0;
 		//While there are still vertices to add, poll a vertex and add neighbors to queue. Then, add to list of 
-		//
-		while(!current.equals(graph.get(destination))) {
+		while(!current.data.equals(destination)) {
+			if(queue.size() == 0)
+				throw new IllegalArgumentException("No path from source to destination");
 			current = queue.poll();
-			for(int i = 0; i < current.neighbors.size(); i++) {
-				queue.offer(current.neighbors.get(i).destination);
-				path.add(current.neighbors.get(i));
+			for(int neighbor = 0; neighbor < current.neighbors.size(); neighbor++) {
+				//gets each neighbor vertex for one vertex
+				Vertex<Type> next = current.neighbors.get(neighbor).destination;
+				if(next.distanceFromStart != 0.0) {
+					next.distanceFromStart = current.distanceFromStart + 1.0;
+					queue.offer(next);
+					next.previous = current;
+					path.addLast(current);
+				}
 			}
 		}
 		return (List<Type>) path;
