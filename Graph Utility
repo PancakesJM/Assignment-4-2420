@@ -16,8 +16,9 @@ public class GraphUtility {
 	 */
 	public static <Type> List<Type> shortestPath(List<Type> sources, List<Type> destinations, Type srcData, Type dstData) {
 		Graph<Type> newGraph = new Graph<>(sources, destinations);
-		List<Type> newGraph.breadthFirstSearch(srcData, dstData);
-		if(!newGraph.graph.containsKey(srcData) || !newGraph.graph.containsKey(dstData) || destinations.size() != sources.size())
+		List<Type> path = newGraph.breadthFirstSearch(srcData, dstData);
+		//Error handles for no start or end values, no path, or mismatch data
+		if(!newGraph.graph.containsKey(srcData) || !newGraph.graph.containsKey(dstData) || destinations.size() != sources.size() || path.size() == 0)
 			throw new IllegalArgumentException("Mismatch data, graphs must be the same length and contain target values");
 		return newGraph.breadthFirstSearch(srcData, dstData);
 	}
@@ -31,9 +32,12 @@ public class GraphUtility {
 	 * @return Linked List of vertices, in order representing a path
 	 */
 	public static <Type> List<Type> shortestWeightedPath(List<Type> sources, List<Type> destinations, List<Double> weights, Type srcData, Type dstData) {
-		Graph<Type> graph = new Graph<>(sources, destinations);
-		graph.dijkstrasAlgorithm(srcData, dstData);
-		return graph.dijkstrasAlgorithm(srcData, dstData);
+		Graph<Type> newGraph = new Graph<>(sources, destinations);
+		List<Type> path = newGraph.dijkstrasAlgorithm(srcData, dstData);
+		//Error handles for no start or end values, no path, or mismatch data
+		if(!newGraph.graph.containsKey(srcData) || !newGraph.graph.containsKey(dstData) || destinations.size() != sources.size() || path.size() == 0)
+			throw new IllegalArgumentException("Mismatch data, graphs must be the same length and contain target values");
+		return newGraph.dijkstrasAlgorithm(srcData, dstData);
 	}
 	/**
 	 * Orders topologically, meaning the closer points to start value come first
@@ -43,6 +47,7 @@ public class GraphUtility {
 	 */
 	public static <Type> List<Type> sort(List<Type> sources, List<Type> destinations) {
 		Graph<Type> graph = new Graph<>(sources, destinations);
+		//if graph contains cycles, throw an exception
 		return graph.topoSort();
 	}
 	
