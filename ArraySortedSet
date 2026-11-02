@@ -1,0 +1,142 @@
+package assign08;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.NoSuchElementException;
+
+public class ArraySortedSet<Type extends Comparable<? super Type>> implements SortedSet <Type>{
+	private int elementNumber = 0;
+	private Object[] backingArray;
+	
+	public ArraySortedSet() {
+		 backingArray = new Object[20];
+	}
+	
+	@Override
+	public boolean add(Type item) {
+		if(elementNumber == this.backingArray.length)
+		    expand();
+		int middle = this.binarySearch(item);
+		if(this.cast(middle).equals(item))
+			return false;
+		//Uses insertion sort to add an item into sorted array
+		for(int i = elementNumber; i > middle; i--) {
+			backingArray[i] = backingArray[i - 1];
+		}
+		backingArray[middle] = item;
+		elementNumber++;
+		return true;
+	}
+
+	@Override
+	public boolean addAll(Collection<? extends Type> items) {
+		int previousSize = this.elementNumber;
+		for(Type item : items) 
+			this.add(item);
+		return previousSize == this.elementNumber;
+	}
+
+	@Override
+	public void clear() {
+		this.backingArray = new Object[10];
+		elementNumber = 0;
+	}
+
+	@Override
+	public boolean contains(Type item) {
+		//return nearest index from binary search
+		int search = binarySearch(item);
+		if(this.elementNumber == 0)
+	        return false;
+		//True if element in array, false otherwise
+	    return backingArray[search].equals(item);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public boolean containsAll(Collection<? extends Type> items) {
+		Object[] itemsArray = (Object[]) items.toArray();
+		Type item = null;
+		for(int i = 0; i < items.size(); i++) {
+			item = (Type) itemsArray[i];
+			if(!(this.contains(item)))
+				return false;
+		}
+			return true;
+	}
+
+	@Override
+	public boolean isEmpty() {
+		return this.elementNumber == 0;
+	}
+
+	@Override
+	public Type min() throws NoSuchElementException {
+		if(elementNumber == 0)
+			throw new NoSuchElementException("Cannot invoke on empty set");
+		return this.cast(0);
+	}
+
+	@Override
+	public Type max() throws NoSuchElementException {
+		if(elementNumber == 0)
+			throw new NoSuchElementException("Cannot invoke on empty set");
+		return this.cast(this.elementNumber - 1);
+	}
+
+	@Override
+	public int size() {
+		return this.elementNumber;
+	}
+
+	@Override
+	public ArrayList<Type> toArrayList() {
+		ArrayList<Type> arrayList = new ArrayList<>();
+		for(int i = 0; i < elementNumber; i++) {
+			arrayList.add(cast(i));
+		}
+		return arrayList;
+	}
+	
+	private int binarySearch(Type target) {
+		if(elementNumber == 0) {
+			return 0;
+		}
+		int min = 0; 
+		int max = elementNumber - 1;
+		int mid = (min + max) / 2;
+		
+		while(min <= max) {
+			int compareElements = ((Comparable<? super Type>)this.backingArray[mid]).compareTo(target);
+			
+			if(compareElements == 0)
+				return mid;
+			if(compareElements < 0) {
+				min = mid + 1;
+				mid = (min + max) / 2;
+			}
+			if(compareElements > 0) {
+				max = mid - 1;
+				mid = (min + max) / 2;
+			}
+		}
+		return min;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private Type cast(int index) {
+		Type item = (Type) backingArray[index];
+		return item;
+	}
+	
+	/**
+	 * doubles the array belonging to the object. Adds empty spaces
+	 * at the end containing null
+	 */
+	private void expand() {
+		Object[] doubleList = new Object[this.backingArray.length * 2];
+		for(int i = 0; i < this.size(); i++)
+			doubleList[i] = this.backingArray[i];
+		this.backingArray = doubleList;
+	}
+}
