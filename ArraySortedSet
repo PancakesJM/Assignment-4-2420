@@ -17,7 +17,7 @@ public class ArraySortedSet<Type extends Comparable<? super Type>> implements So
 		if(elementNumber == this.backingArray.length)
 		    expand();
 		int middle = this.binarySearch(item);
-		if(this.cast(middle).equals(item))
+		if(middle < elementNumber && cast(middle).compareTo(item) == 0)
 			return false;
 		//Uses insertion sort to add an item into sorted array
 		for(int i = elementNumber; i > middle; i--) {
@@ -33,7 +33,7 @@ public class ArraySortedSet<Type extends Comparable<? super Type>> implements So
 		int previousSize = this.elementNumber;
 		for(Type item : items) 
 			this.add(item);
-		return previousSize == this.elementNumber;
+		return previousSize != this.elementNumber;
 	}
 
 	@Override
@@ -46,10 +46,8 @@ public class ArraySortedSet<Type extends Comparable<? super Type>> implements So
 	public boolean contains(Type item) {
 		//return nearest index from binary search
 		int search = binarySearch(item);
-		if(this.elementNumber == 0)
-	        return false;
 		//True if element in array, false otherwise
-	    return backingArray[search].equals(item);
+	    return search < elementNumber && cast(search).compareTo(item) == 0;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -98,16 +96,17 @@ public class ArraySortedSet<Type extends Comparable<? super Type>> implements So
 		return arrayList;
 	}
 	
+	
 	private int binarySearch(Type target) {
 		if(elementNumber == 0) {
 			return 0;
 		}
 		int min = 0; 
 		int max = elementNumber - 1;
-		int mid = (min + max) / 2;
+		int mid = min + (max - min) / 2;
 		
 		while(min <= max) {
-			int compareElements = ((Comparable<? super Type>)this.backingArray[mid]).compareTo(target);
+			int compareElements = cast(mid).compareTo(target);
 			
 			if(compareElements == 0)
 				return mid;
