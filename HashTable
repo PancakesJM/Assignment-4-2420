@@ -1,0 +1,160 @@
+package assign09;
+
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
+
+public class HashTable<K, V> implements Map<K, V>{
+	double loadFactor;
+	int capacity = 101;
+	Object[] backingArray = new Object[101];
+	// set to true when tombstone objects should be returned to insert over
+	boolean isInsert = false;
+	private static final Object TOMBSTONE = new Object();
+	int size = 0;
+	
+	public HashTable() {
+		loadFactor = 0.5;
+	}
+	
+	public HashTable(double loadFactor) {
+		if(loadFactor < 0.0 || loadFactor > 1.0)
+			throw new IllegalArgumentException("Load factor must be between 0 and 1.0");
+		this.loadFactor = loadFactor;
+	}
+	
+	/**
+	 * Clears existing data and returns HashTable to original size
+	 */
+	@Override
+	public void clear() {
+		backingArray = new Object[101];
+		capacity = 101;
+		size = 0;
+	}
+	
+	@Override
+	public boolean containsKey(K key) {
+		int hash = getHashIndex(key, backingArray.length, false);
+		if(backingArray[hash] == null || backingArray[hash] == TOMBSTONE)
+			return false;
+		return true;
+	}
+
+	@Override
+	public boolean containsValue(V value) {
+		for(int i = 0; i < backingArray.length; i++)
+			if(backingArray[i] != null && cast(i, backingArray).getValue().equals(value))
+				return true;
+		return false;
+	}
+	
+	@Override
+	public List<MapEntry<K, V>> entries() {
+		List<MapEntry<K, V>> list = new ArrayList<>();
+		for(int i = 0; i < backingArray.length; i++) {
+			if(backingArray[i] != null)
+				list.add(this.cast(i, backingArray));
+		}
+		return list;
+	}
+	
+	@Override
+	public V get(K key) {
+		if(!this.containsKey(key))
+			return null;
+		int hash = getHashIndex(key, backingArray.length, false);
+		return this.cast(hash, backingArray).getValue();
+	}
+	
+	@Override
+	public boolean isEmpty() {
+		if(size == 0)
+			return true;
+		return false;
+	}
+	
+	@Override
+	public V put(K key, V value) {
+		if(((double) size + 1 / backingArray.length) > loadFactor)
+			backingArray = rehash();
+		isInsert = true;
+		MapEntry<K, V> previousEntry = new MapEntry<>(key, value);
+		int hash = getHashIndex(key, backingArray.length, true);
+		if(this.containsKey(key)) {
+			previousEntry = this.cast(hash, backingArray);
+			backingArray[hash] = new MapEntry<>(key, value);
+			return previousEntry.getValue();
+		}
+		backingArray[hash] = new MapEntry<>(key, value);
+		size++;
+		isInsert = false;
+		return null;
+	}
+	
+	@Override
+	public V remove(K key) {
+		if(!this.containsKey(key))
+			return null;
+		int hash = getHashIndex(key, backingArray.length, false);
+		V previousEntry = cast(hash, backingArray).getValue();
+		backingArray[hash] = TOMBSTONE;
+		size--;
+		return previousEntry;
+	}
+	
+	@Override
+	public int size() {
+		return this.size;
+	}
+	
+	public int capacity() {
+		return this.capacity;
+	}
+	
+	private int getHashIndex(K key, int size, boolean isInsert) {
+		int initialHash = key.hashCode();
+		if(initialHash == Integer.MIN_VALUE)
+			initialHash++;
+		initialHash = Math.abs(initialHash) % size;
+		int hash = initialHash;
+		int tombstoneIndex = -1;
+		int nullIndex = -1;
+		for(int i = 0; i < size; i++) {
+			if(backingArray[hash] == null && isInsert)
+				nullIndex = hash;
+			if(backingArray[hash].equals(TOMBSTONE) && tombstoneIndex == -1)
+				tombstoneIndex = hash;
+			else {
+				if(backingArray[hash] != null && cast(hash, backingArray).getKey().equals(key))
+					return hash;
+			}
+			hash = (initialHash + (i * i)) % size;
+		}
+		if(isInsert && tombstoneIndex != -1)
+			return tombstoneIndex;
+		return hash;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private MapEntry<K , V> cast(int index, Object[] array) {
+		MapEntry<K, V> item = (MapEntry<K, V>) array[index];
+		return item;
+	}
+	
+	private Object[] rehash() {
+		BigInteger doubled = BigInteger.valueOf(backingArray.length * 2);
+		BigInteger newLength = doubled.nextProbablePrime();
+		Object[] newArray = new Object[newLength.intValue()];
+		int hash = 0;
+		for(int i = 0; i < backingArray.length; i++) {
+			if(backingArray[i] != null && !backingArray[i].equals(TOMBSTONE)) {
+				hash = getHashIndex(cast(i, newArray).getKey(), newLength.intValue());
+				newArray[hash] = backingArray[i];
+			}
+		}
+		this.capacity = newLength.intValue();
+		return newArray;	
+	}
+	
+}
