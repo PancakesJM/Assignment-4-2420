@@ -8,8 +8,6 @@ public class HashTable<K, V> implements Map<K, V>{
 	double loadFactor;
 	int capacity = 101;
 	Object[] backingArray = new Object[101];
-	// set to true when tombstone objects should be returned to insert over
-	boolean isInsert = false;
 	private static final Object TOMBSTONE = new Object();
 	int size = 0;
 	
@@ -35,7 +33,7 @@ public class HashTable<K, V> implements Map<K, V>{
 	
 	@Override
 	public boolean containsKey(K key) {
-		int hash = getHashIndex(key, backingArray.length, false);
+		int hash = getKeyIndex(key, backingArray.length);
 		if(backingArray[hash] == null || backingArray[hash] == TOMBSTONE)
 			return false;
 		return true;
@@ -63,7 +61,7 @@ public class HashTable<K, V> implements Map<K, V>{
 	public V get(K key) {
 		if(!this.containsKey(key))
 			return null;
-		int hash = getHashIndex(key, backingArray.length, false);
+		int hash = getKeyIndex(key, backingArray.length);
 		return this.cast(hash, backingArray).getValue();
 	}
 	
@@ -78,9 +76,8 @@ public class HashTable<K, V> implements Map<K, V>{
 	public V put(K key, V value) {
 		if(((double) size + 1 / backingArray.length) > loadFactor)
 			backingArray = rehash();
-		isInsert = true;
 		MapEntry<K, V> previousEntry = new MapEntry<>(key, value);
-		int hash = getHashIndex(key, backingArray.length, true);
+		int hash = getPutIndex(key, backingArray.length);
 		if(this.containsKey(key)) {
 			previousEntry = this.cast(hash, backingArray);
 			backingArray[hash] = new MapEntry<>(key, value);
@@ -88,7 +85,7 @@ public class HashTable<K, V> implements Map<K, V>{
 		}
 		backingArray[hash] = new MapEntry<>(key, value);
 		size++;
-		isInsert = false;
+		
 		return null;
 	}
 	
@@ -96,7 +93,7 @@ public class HashTable<K, V> implements Map<K, V>{
 	public V remove(K key) {
 		if(!this.containsKey(key))
 			return null;
-		int hash = getHashIndex(key, backingArray.length, false);
+		int hash = getKeyIndex(key, backingArray.length);
 		V previousEntry = cast(hash, backingArray).getValue();
 		backingArray[hash] = TOMBSTONE;
 		size--;
@@ -112,28 +109,36 @@ public class HashTable<K, V> implements Map<K, V>{
 		return this.capacity;
 	}
 	
-	private int getHashIndex(K key, int size, boolean isInsert) {
+	private int getPutIndex(K key, int size) {
 		int initialHash = key.hashCode();
 		if(initialHash == Integer.MIN_VALUE)
 			initialHash++;
 		initialHash = Math.abs(initialHash) % size;
 		int hash = initialHash;
-		int tombstoneIndex = -1;
-		int nullIndex = -1;
+		
 		for(int i = 0; i < size; i++) {
-			if(backingArray[hash] == null && isInsert)
-				nullIndex = hash;
-			if(backingArray[hash].equals(TOMBSTONE) && tombstoneIndex == -1)
-				tombstoneIndex = hash;
-			else {
-				if(backingArray[hash] != null && cast(hash, backingArray).getKey().equals(key))
-					return hash;
-			}
+			if(getKeyIndex(key, size) != -1)
+				return getKeyIndex(key, size);
+			if(backingArray[hash] == TOMBSTONE || backingArray[hash] == null)
+				return hash;
 			hash = (initialHash + (i * i)) % size;
 		}
-		if(isInsert && tombstoneIndex != -1)
-			return tombstoneIndex;
-		return hash;
+		return -1;
+	}
+	
+	private int getKeyIndex(K key, int size) {
+		int initialHash = key.hashCode();
+		if(initialHash == Integer.MIN_VALUE)
+			initialHash++;
+		initialHash = Math.abs(initialHash) % size;
+		int hash = initialHash;
+		for(int i = 0; i < size; i++) {
+			if(backingArray[hash] != null && !backingArray[hash].equals(TOMBSTONE))
+				if(cast(hash, backingArray).getKey().equals(key))
+					return hash;
+			hash = (initialHash + (i * i)) % size;
+		}
+		return -1;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -149,7 +154,7 @@ public class HashTable<K, V> implements Map<K, V>{
 		int hash = 0;
 		for(int i = 0; i < backingArray.length; i++) {
 			if(backingArray[i] != null && !backingArray[i].equals(TOMBSTONE)) {
-				hash = getHashIndex(cast(i, newArray).getKey(), newLength.intValue());
+				hash = getPutIndex(cast(i, newArray).getKey(), newLength.intValue());
 				newArray[hash] = backingArray[i];
 			}
 		}
@@ -158,3 +163,4 @@ public class HashTable<K, V> implements Map<K, V>{
 	}
 	
 }
+
