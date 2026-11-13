@@ -116,7 +116,7 @@ public class HashTable<K, V> implements Map<K, V>{
 		initialHash = Math.abs(initialHash) % size;
 		int hash = initialHash;
 		
-		for(int i = 0; i < size; i++) {
+		for(int i = 1; i < size + 1; i++) {
 			if(getKeyIndex(key, size) != -1)
 				return getKeyIndex(key, size);
 			if(backingArray[hash] == TOMBSTONE || backingArray[hash] == null)
@@ -132,10 +132,13 @@ public class HashTable<K, V> implements Map<K, V>{
 			initialHash++;
 		initialHash = Math.abs(initialHash) % size;
 		int hash = initialHash;
-		for(int i = 0; i < size; i++) {
-			if(backingArray[hash] != null && !backingArray[hash].equals(TOMBSTONE))
+		for(int i = 1; i < size + 1; i++) {
+			if(backingArray[hash] != null && backingArray[hash] !=(TOMBSTONE))
 				if(cast(hash, backingArray).getKey().equals(key))
 					return hash;
+			if(backingArray[hash] == null)
+				return -1;
+				
 			hash = (initialHash + (i * i)) % size;
 		}
 		return -1;
