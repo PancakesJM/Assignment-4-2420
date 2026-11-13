@@ -33,16 +33,13 @@ public class HashTable<K, V> implements Map<K, V>{
 	
 	@Override
 	public boolean containsKey(K key) {
-		int hash = getKeyIndex(key, backingArray.length);
-		if(backingArray[hash] == null || backingArray[hash] == TOMBSTONE)
-			return false;
-		return true;
+		return getKeyIndex(key, backingArray.length, backingArray) != -1;
 	}
 
 	@Override
 	public boolean containsValue(V value) {
 		for(int i = 0; i < backingArray.length; i++)
-			if(backingArray[i] != null && cast(i, backingArray).getValue().equals(value))
+			if(backingArray[i] != null && backingArray[i] != TOMBSTONE && cast(i, backingArray).getValue().equals(value))
 				return true;
 		return false;
 	}
@@ -51,7 +48,7 @@ public class HashTable<K, V> implements Map<K, V>{
 	public List<MapEntry<K, V>> entries() {
 		List<MapEntry<K, V>> list = new ArrayList<>();
 		for(int i = 0; i < backingArray.length; i++) {
-			if(backingArray[i] != null)
+			if(backingArray[i] != null && backingArray[i] != TOMBSTONE)
 				list.add(this.cast(i, backingArray));
 		}
 		return list;
@@ -61,7 +58,7 @@ public class HashTable<K, V> implements Map<K, V>{
 	public V get(K key) {
 		if(!this.containsKey(key))
 			return null;
-		int hash = getKeyIndex(key, backingArray.length);
+		int hash = getKeyIndex(key, backingArray.length, backingArray);
 		return this.cast(hash, backingArray).getValue();
 	}
 	
@@ -74,18 +71,19 @@ public class HashTable<K, V> implements Map<K, V>{
 	
 	@Override
 	public V put(K key, V value) {
-		if(((double) size + 1 / backingArray.length) > loadFactor)
-			backingArray = rehash();
 		MapEntry<K, V> previousEntry = new MapEntry<>(key, value);
-		int hash = getPutIndex(key, backingArray.length);
+		int hash = getPutIndex(key, backingArray.length, backingArray);
 		if(this.containsKey(key)) {
 			previousEntry = this.cast(hash, backingArray);
 			backingArray[hash] = new MapEntry<>(key, value);
 			return previousEntry.getValue();
 		}
+		
+		if((double) (size + 1) / backingArray.length > loadFactor)
+			backingArray = rehash();
+		
 		backingArray[hash] = new MapEntry<>(key, value);
 		size++;
-		
 		return null;
 	}
 	
@@ -93,7 +91,7 @@ public class HashTable<K, V> implements Map<K, V>{
 	public V remove(K key) {
 		if(!this.containsKey(key))
 			return null;
-		int hash = getKeyIndex(key, backingArray.length);
+		int hash = getKeyIndex(key, backingArray.length, backingArray);
 		V previousEntry = cast(hash, backingArray).getValue();
 		backingArray[hash] = TOMBSTONE;
 		size--;
@@ -109,34 +107,34 @@ public class HashTable<K, V> implements Map<K, V>{
 		return this.capacity;
 	}
 	
-	private int getPutIndex(K key, int size) {
+	private int getPutIndex(K key, int size, Object[] array) {
 		int initialHash = key.hashCode();
 		if(initialHash == Integer.MIN_VALUE)
 			initialHash++;
 		initialHash = Math.abs(initialHash) % size;
 		int hash = initialHash;
-		
+		int keyIndex = getKeyIndex(key, size, array);
 		for(int i = 1; i < size + 1; i++) {
-			if(getKeyIndex(key, size) != -1)
-				return getKeyIndex(key, size);
-			if(backingArray[hash] == TOMBSTONE || backingArray[hash] == null)
+			if(keyIndex != -1)
+				return keyIndex;
+			if(array[hash] == TOMBSTONE || array[hash] == null)
 				return hash;
 			hash = (initialHash + (i * i)) % size;
 		}
 		return -1;
 	}
 	
-	private int getKeyIndex(K key, int size) {
+	private int getKeyIndex(K key, int size, Object[] array) {
 		int initialHash = key.hashCode();
 		if(initialHash == Integer.MIN_VALUE)
 			initialHash++;
 		initialHash = Math.abs(initialHash) % size;
 		int hash = initialHash;
 		for(int i = 1; i < size + 1; i++) {
-			if(backingArray[hash] != null && backingArray[hash] !=(TOMBSTONE))
-				if(cast(hash, backingArray).getKey().equals(key))
+			if(array[hash] != null && array[hash] !=(TOMBSTONE))
+				if(cast(hash, array).getKey().equals(key))
 					return hash;
-			if(backingArray[hash] == null)
+			if(array[hash] == null)
 				return -1;
 				
 			hash = (initialHash + (i * i)) % size;
@@ -157,7 +155,7 @@ public class HashTable<K, V> implements Map<K, V>{
 		int hash = 0;
 		for(int i = 0; i < backingArray.length; i++) {
 			if(backingArray[i] != null && !backingArray[i].equals(TOMBSTONE)) {
-				hash = getPutIndex(cast(i, newArray).getKey(), newLength.intValue());
+				hash = getPutIndex(cast(i, backingArray).getKey(), newLength.intValue(), newArray);
 				newArray[hash] = backingArray[i];
 			}
 		}
