@@ -3,18 +3,30 @@ package assign09;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-
+/**
+ * Creates a HashTable that holds generic Map pairs. Uses quadratic probing and contains methods for searching
+ * and adding to the table. Guarantees no infinite loops for default load factor.
+ * @version 11/12/2026
+ * @author Ava Murphy and Yujia Zhao
+ * 
+ */
 public class HashTable<K, V> implements Map<K, V>{
 	double loadFactor;
 	int capacity = 101;
 	Object[] backingArray = new Object[101];
 	private static final Object TOMBSTONE = new Object();
 	int size = 0;
-	
+	/**
+	 * Constructs a HashTable object with a load factor of 0.5.
+	 */
 	public HashTable() {
 		loadFactor = 0.5;
 	}
-	
+	/**
+	 * Constructs a HashTable object with a custom load factor
+	 * @param loadFactor- number between 0.0 and 1.0 (exclusive)
+	 * @throws IllegalArgumentException- if load factor is not in range
+	 */
 	public HashTable(double loadFactor) {
 		if(loadFactor < 0.0 || loadFactor > 1.0)
 			throw new IllegalArgumentException("Load factor must be between 0 and 1.0");
@@ -31,11 +43,25 @@ public class HashTable<K, V> implements Map<K, V>{
 		size = 0;
 	}
 	
+
+	/**
+	 * Determines whether this map contains the specified key.
+	 * 
+	 * @param key - the key being searched for
+	 * @return true if this map contains the key, false otherwise
+	 */
 	@Override
 	public boolean containsKey(K key) {
 		return getKeyIndex(key, backingArray.length, backingArray) != -1;
 	}
 
+	/**
+	 * Determines whether this map contains the specified value.
+	 * 
+	 * @param value - the value being searched for
+	 * @return true if this map contains one or more keys to the specified value,
+	 *         false otherwise
+	 */
 	@Override
 	public boolean containsValue(V value) {
 		for(int i = 0; i < backingArray.length; i++)
@@ -44,6 +70,12 @@ public class HashTable<K, V> implements Map<K, V>{
 		return false;
 	}
 	
+	/**
+	 * Returns a list view of the mappings contained in this map, where the ordering of 
+	 * mapping in the list is insignificant.
+	 * 
+	 * @return a List object containing all mapping (i.e., entries) in this map
+	 */
 	@Override
 	public List<MapEntry<K, V>> entries() {
 		List<MapEntry<K, V>> list = new ArrayList<>();
@@ -54,6 +86,13 @@ public class HashTable<K, V> implements Map<K, V>{
 		return list;
 	}
 	
+	/**
+	 * Gets the value to which the specified key is mapped.
+	 * 
+	 * @param key - the key for which to get the mapped value
+	 * @return the value to which the specified key is mapped, or null if this map
+	 *         contains no mapping for the key
+	 */
 	@Override
 	public V get(K key) {
 		if(!this.containsKey(key))
@@ -62,6 +101,11 @@ public class HashTable<K, V> implements Map<K, V>{
 		return this.cast(hash, backingArray).getValue();
 	}
 	
+	/**
+	 * Determines whether this map contains any mappings.
+	 * 
+	 * @return true if this map contains no mappings, false otherwise
+	 */
 	@Override
 	public boolean isEmpty() {
 		if(size == 0)
@@ -69,6 +113,17 @@ public class HashTable<K, V> implements Map<K, V>{
 		return false;
 	}
 	
+	/**
+	 * Associates the specified value with the specified key in this map.
+	 * (I.e., if the key already exists in this map, resets the value; 
+	 * otherwise adds the specified key-value pair.)
+	 * 
+	 * @param key - the key for which to update the value (if exists)
+	 *              or to be added to the table
+	 * @param value - the value to be mapped to the key
+	 * @return the previous value associated with key, or null if there was no
+	 *         mapping for key
+	 */
 	@Override
 	public V put(K key, V value) {
 		MapEntry<K, V> previousEntry = new MapEntry<>(key, value);
@@ -87,6 +142,13 @@ public class HashTable<K, V> implements Map<K, V>{
 		return null;
 	}
 	
+	/**
+	 * Removes the mapping for a key from this map if it is present.
+	 *
+	 * @param key - the key to be removed
+	 * @return the previous value associated with key, or null if there was no
+	 *         mapping for key
+	 */
 	@Override
 	public V remove(K key) {
 		if(!this.containsKey(key))
@@ -98,15 +160,34 @@ public class HashTable<K, V> implements Map<K, V>{
 		return previousEntry;
 	}
 	
+	/**
+	 * Determines the number of mappings in this map.
+	 * 
+	 * O(1) for a quadratic-probing hash table
+	 * 
+	 * @return the number of mappings in this map
+	 */
 	@Override
 	public int size() {
 		return this.size;
 	}
 	
+	/**
+	 * Determines available slots in table
+	 * @return length of backing array
+	 */
 	public int capacity() {
 		return this.capacity;
 	}
 	
+	/**
+	 * Uses an Object's natural hash code quadratic probing to find closest empty or
+	 * previously deleted index. Intended for overwriting a previous MapValue or adding a new one
+	 * @param key- map key to add to array
+	 * @param size- capacity of array
+	 * @param array- array to put index in
+	 * @return- index to put key or -1 if none found
+	 */
 	private int getPutIndex(K key, int size, Object[] array) {
 		int initialHash = key.hashCode();
 		if(initialHash == Integer.MIN_VALUE)
@@ -124,6 +205,13 @@ public class HashTable<K, V> implements Map<K, V>{
 		return -1;
 	}
 	
+	/**
+	 * Uses an Object's natural hash code quadratic probing to find the index of existing key
+	 * @param key- map key to search for in array
+	 * @param size- capacity of array
+	 * @param array- array to find index in
+	 * @return- index of existing key or -1 if none found
+	 */
 	private int getKeyIndex(K key, int size, Object[] array) {
 		int initialHash = key.hashCode();
 		if(initialHash == Integer.MIN_VALUE)
@@ -141,13 +229,23 @@ public class HashTable<K, V> implements Map<K, V>{
 		}
 		return -1;
 	}
-	
+	/**
+	 * Intended to cast points of an Object[] array, allowing for MapEntry methods to be used.
+	 * Only works on a valid cast.
+	 * @param index- point to retrieve and cast item
+	 * @param array- array to retrieve index
+	 * @return Casted MapEntry<K, V> object
+	 */
 	@SuppressWarnings("unchecked")
 	private MapEntry<K , V> cast(int index, Object[] array) {
 		MapEntry<K, V> item = (MapEntry<K, V>) array[index];
 		return item;
 	}
-	
+	/**
+	 * Doubles existing backing array and guarantees a prime number length. Existing items are 
+	 * rehashed to new size and tombstone objects are removed.
+	 * @return new Object[] array to be used for backing array.
+	 */
 	private Object[] rehash() {
 		BigInteger doubled = BigInteger.valueOf(backingArray.length * 2);
 		BigInteger newLength = doubled.nextProbablePrime();
@@ -164,4 +262,3 @@ public class HashTable<K, V> implements Map<K, V>{
 	}
 	
 }
-
