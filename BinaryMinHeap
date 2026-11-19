@@ -1,0 +1,218 @@
+package assign10;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.NoSuchElementException;
+/**
+ * Creates a generic binary min heap backed by a list. Supports comparable and comparator interfaces.
+ * Contains operations to add an item, delete minimum, or peek minimum.
+ * 
+ * @version 11/20/2026
+ * @author Ava Murphy and Yujia Zhao
+ * 
+ */
+public class BinaryMinHeap <E> implements PriorityQueue<E>{
+	
+	private Object[] backingArray = new Object[10];
+	private Comparator<? super E> comparator = null;
+	private int size = 0;
+	private E root = cast(0);
+	/**
+	 * Constructs a heap, must be comparable type
+	 */
+	public BinaryMinHeap() {
+	}
+	/**
+	 * Constructs a heap with a comparator
+	 * @param comparator- custom comparator object
+	 */
+	public BinaryMinHeap(Comparator<? super E> comparator) {
+		this.comparator = comparator;
+	}
+	/**
+	 * Constructs a heap, must be comparable type
+	 * @param list- items to add to heap, must all compare to each other
+	 */
+	public BinaryMinHeap(List<? extends E> list) {
+		//Don't use add method, create make heap class
+		for(int i = 0; i < list.size(); i++)
+			this.add(list.get(i));
+	}
+	/**
+	 * Constructs a heap with a comparator
+	 * @param comparator- custom comparator object
+	 * @param list- items to add to heap, must all compare to each other
+	 */
+	public BinaryMinHeap(List<? extends E> list, Comparator<? super E> comparator) {
+		//same for this one
+		for(int i = 0; i < list.size(); i++)
+			this.add(list.get(i));
+	}
+	/**
+	 * Adds the given element to this heap
+	 * 
+	 * @param element - element to be added to this heap
+	 */
+	@Override
+	public void add(E element) {
+		if(this.backingArray.length == this.size)
+			expand();
+		backingArray[size] = element;
+		this.percolateUp();
+		size++;
+	}
+	/**
+	 * Gets the minimum element in this heap.
+	 * 
+	 * @return minimum element
+	 * @throws NoSuchElementException if this priority queue is empty
+	 */
+	@Override
+	public E peek() throws NoSuchElementException {
+		if(this.isEmpty())
+			throw new NoSuchElementException("No elements in heap");
+		return cast(0);
+	}
+	/**
+	 * Gets and removes the minimum element this heap.
+	 * 
+	 * @return minimum element in this heap
+	 * @throws NoSuchElementException if this heap is empty
+	 */
+	@Override
+	public E extract() throws NoSuchElementException {
+		if(this.isEmpty())
+			throw new NoSuchElementException("No elements in heap");
+		E extracted = this.peek();
+		this.percolateDown();
+		return extracted;
+	}
+	/**
+	 * Gets the number of elements in this heap
+	 * 
+	 * @return number of elements in this heap
+	 */
+	@Override
+	public int size() {
+		return this.size;
+	}
+	/**
+	 * Determines whether this heap is empty.
+	 * 
+	 * @return true if this heap is empty, false otherwise
+	 */
+	@Override
+	public boolean isEmpty() {
+		return size == 0;
+	}
+	/**
+	 * Empties this heap of elements.
+	 */
+	@Override
+	public void clear() {
+		backingArray = new Object[10];
+	}
+	/** 
+	 * Generates an array of the elements in this heap,
+	 * in the same order they appear in the backing array.
+	 */
+	@Override
+	public Object[] toArray() {
+		Object[] newArray = new Object[size];
+		for(int i = 0; i < size; i++)
+			newArray[i] = cast(i);
+		return newArray;
+	}
+	/**
+	 * Compares to E items depending on which constructor was used
+	 * @param o1- first item in array to compare
+	 * @param o2- second item in array to compare
+	 * @return < 0 if o1 is smaller, > 0 if o1 is bigger
+	 */
+	@SuppressWarnings("unchecked")
+	private int innerCompare(E o1, E o2) {
+		if(this.comparator != null)
+			return comparator.compare(o1, o2);
+		else
+			return ((Comparable<E>) o1).compareTo(o2);
+	}
+	
+	/**
+	 * Takes the last (newly added) variable and swaps with it's parent to keep min heap order
+	 */
+	private void percolateUp() {
+		//gets parent of last child 
+		int parent = ((size) - 1) / 2;
+		int child = size;
+		E temp = null;
+			//switches child with parent until order is restored
+		// be sure to check condition where parent is out of range (DNE)
+		while(innerCompare(cast(parent), cast(child)) > 0) {
+			temp = cast(child);
+			backingArray[child] = cast(parent);
+			backingArray[parent] = temp;
+		}
+	}
+	/**
+	 * Deletes minimum value by replacing the root of tree with the most recent added value.
+	 * The value is swapped with smallest child until order is restored.
+	 */
+	private void percolateDown() {
+		//replaces root to be deleted with newest link
+		if(size == 1) {
+			root = null;
+			size--;
+			return;
+		}
+		backingArray[0] = backingArray[size];
+		backingArray[size] = null;
+		int index = 0;
+		E current = root;
+		while((index * 2 + 1) < size) {
+			int child1 = index * 2 + 1;
+			int child2 = index * 2 + 2;
+			int child2Compare = -1;
+			if(child2 < size)
+				child2Compare = innerCompare(current, cast(child2));
+			// if no right child, default to left. If right is less than left, also choose left.
+			if(child2Compare == -1 || innerCompare(cast(child1), cast(child2)) < 0) {
+				E temp = current;
+				current = cast(child1);
+				backingArray[child1] = temp;
+				index = child1;
+			}	
+			//Right child case
+			else {
+				E temp = current;
+				current = cast(child2);
+				backingArray[child2] = temp;
+				index = child2;
+			}
+		}
+		size--;		
+	}
+	
+	/**
+	 * Allows for retrieval of a generic type. Operates on backing array
+	 * @return item at specified index
+	 */
+	@SuppressWarnings("unchecked")
+	private E cast(int index) {
+		if(index < 0 || index > size)
+			return null;
+		E item = (E) backingArray[index];
+		return item;
+	}
+	
+	/**
+	 * doubles the array belonging to the object. Adds empty spaces
+	 * at the end containing null
+	 */
+	private void expand() {
+		Object[] doubleList = new Object[this.backingArray.length * 2];
+		for(int i = 0; i < this.size(); i++)
+			doubleList[i] = this.backingArray[i];
+		this.backingArray = doubleList;
+	}
+
+}
